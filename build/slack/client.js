@@ -1,5 +1,7 @@
 import { WebClient, LogLevel } from "@slack/web-api";
 export class SlackClient {
+    web;
+    allowedChannels;
     constructor(token, allowedChannels) {
         this.web = new WebClient(token, { logLevel: LogLevel.ERROR });
         this.allowedChannels = new Set(allowedChannels);

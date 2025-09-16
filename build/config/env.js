@@ -21,5 +21,9 @@ export function loadEnv() {
         .split(",")
         .map(s => s.trim())
         .filter(Boolean);
+    const invalidWithHash = parsedChannels.find(c => c.startsWith("#"));
+    if (invalidWithHash) {
+        throw new Error("SLACK_CHANNELS must not contain '#'. Use channel names or IDs without '#', e.g. 'general,random' or 'C0123456'.");
+    }
     return { ...parsed.data, parsedChannels };
 }

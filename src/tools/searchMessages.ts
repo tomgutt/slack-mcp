@@ -1,4 +1,4 @@
-import type { SlackClient } from "../slack/client";
+import type { SlackClient } from "../slack/client.js";
 
 export type SearchMessagesParams = {
   query: string;
