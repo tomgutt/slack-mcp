@@ -1,13 +1,11 @@
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { loadEnv } from "./config/env.js";
-import { SlackClient } from "./slack/client.js";
 import { searchMessagesTool } from "./tools/searchMessages.js";
 import { getMessageDetailsTool } from "./tools/getMessageDetails.js";
 import { listChannelsTool } from "./tools/listChannels.js";
-const env = loadEnv();
-const slack = new SlackClient(env.SLACK_AUTH_BOT_TOKEN, env.parsedChannels);
+import { slackClient } from "./slack/client.js";
+const slack = slackClient;
 const server = new Server({
     name: "slack-mcp",
     version: "0.1.0"
