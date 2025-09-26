@@ -30,7 +30,7 @@ async function main() {
             properties: {
               query: { 
                 type: "string",
-                description: "The query to search for."
+                description: "The query to search for without any filters."
               },
               messageCount: { 
                 type: "number",

@@ -49,13 +49,11 @@ export async function searchMessagesTool(slack: SlackClient, params: SearchMessa
   // Get allowed channels and add them to the query
   const targetChannels = slack.listAllowedChannels();
   const finalQuery = addChannelFilters(sanitizedQuery, targetChannels);
-  console.log("finalQuery: ", finalQuery);
   let sanitizedMessageCount = 0;
 
   const aggregated: any[] = [];
   for (let page = 1; aggregated.length < messageCount; page += 1) {
     sanitizedMessageCount = Math.min(messageCount - aggregated.length, 100); // Slack search API has a limit of 100 messages per page and will reset to a count of 20 if a higher count is requested
-    console.log(`Fetching page ${page} to get ${messageCount} messages. I will now fetch ${sanitizedMessageCount} messages. I already fetched ${aggregated.length} messages.`);
     const res = await slack.sdk.search.messages({ query: finalQuery, count: sanitizedMessageCount, page, sort: highlight, sort_dir: sortDir });
     if (!res.ok || !res.messages) break;
     const matches = res.messages.matches ?? [];
@@ -64,24 +62,26 @@ export async function searchMessagesTool(slack: SlackClient, params: SearchMessa
       const anyMatch = m as any;
       const light = {
         text: anyMatch.text,
-        user: anyMatch.user,
+        authorUserId: anyMatch.user,
+        authorUserName: anyMatch.username,
         ts: anyMatch.ts,
-        channel: anyMatch.channel?.name ?? anyMatch.channel?.id ?? anyMatch.channel,
-        permalink: anyMatch.permalink,
-        team: anyMatch.team,
-        is_thread: Boolean(anyMatch.thread_ts && anyMatch.thread_ts !== anyMatch.ts),
-        thread_ts: anyMatch.thread_ts
+        channelName: anyMatch.channel?.name,
+        channelId: anyMatch.channel?.id,
+        linkToMessage: anyMatch.permalink
       };
       aggregated.push(light);
 
-      if (includeThreads && anyMatch.thread_ts) {
+      if (includeThreads && anyMatch.ts) {
         // fetch limited thread replies lightweightly
-        const replies = await slack.sdk.conversations.replies({ channel: (anyMatch.channel?.id ?? anyMatch.channel)!, ts: anyMatch.thread_ts, limit: threadCount });
-        const lightReplies = (replies.messages ?? []).slice(1).map(r => ({
-          text: (r as any).text,
-          user: (r as any).user,
-          ts: (r as any).ts
-        }));
+        const replies = await slack.sdk.conversations.replies({ channel: anyMatch.channel?.id, ts: anyMatch.ts, limit: threadCount });
+        const lightReplies = (replies.messages ?? [])
+          .slice(1)
+          .filter(r => (r as any).text && (r as any).text.trim() !== '')
+          .map(r => ({
+            text: (r as any).text,
+            authorUserId: (r as any).user,
+            // threadTs: (r as any).ts
+          }));
         (light as any).replies = lightReplies;
       }
     }
@@ -90,6 +90,8 @@ export async function searchMessagesTool(slack: SlackClient, params: SearchMessa
     if (!paging || (paging.page ?? 0) >= (paging.pages ?? 0)) break;
   }
 
-  console.log(`Done! I fetched ${aggregated.length} messages.`);
-  return { messages: aggregated };
+  return { 
+    usedSanitizedQuery: sanitizedQuery,
+    messages: aggregated
+   };
 }
