@@ -3,7 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { searchMessagesTool } from "./tools/searchMessages.js";
-import { getMessageDetailsTool } from "./tools/getMessageDetails.js";
+import { getMessageThreadTool } from "./tools/getMessageThread.js";
 import { slackClient } from "./slack/client.js";
 
 async function main() {
@@ -58,27 +58,26 @@ async function main() {
           }
         },
         {
-          name: "get_message_details",
-          description: "Get details of a specific Slack message, optionally including thread replies.",
+          name: "get_message_thread",
+          description: "Get the replies (thread) of a specific Slack message.",
           inputSchema: {
             type: "object",
             properties: {
+              channelId: { 
+                type: "string",
+                description: "The ID of the channel to get the replies for."
+              },
               ts: { 
                 type: "string",
-                description: "The timestamp of the message to get the details for."
-              },
-              includeThread: { 
-                type: "boolean",
-                description: "Whether to include thread replies.",
-                default: true
+                description: "The timestamp of the message to get the replies for."
               },
               threadCount: { 
                 type: "number",
-                description: "The maximum number of thread replies to include if includeThreads is true. Set to a higher number when doing a deep dive search with a small messageCount.",
+                description: "The maximum number of thread replies to include.",
                 default: 50
               }
             },
-            required: ["ts"]
+            required: ["channelId", "ts"]
           }
         }
       ]
@@ -94,8 +93,8 @@ async function main() {
         const result = await searchMessagesTool(slack, args);
         return { content: [{ type: "json", data: result }] } as any;
       }
-      if (name === "get_message_details") {
-        const result = await getMessageDetailsTool(slack, args);
+      if (name === "get_message_thread") {
+        const result = await getMessageThreadTool(slack, args);
         return { content: [{ type: "json", data: result }] } as any;
       }
 
