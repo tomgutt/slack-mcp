@@ -40,7 +40,7 @@ export async function searchMessagesTool(slack: SlackClient, params: SearchMessa
   const includeThreads = params.includeThreads ?? false;
   const messageCount = params.messageCount ?? 20;
   const threadCount = params.threadCount ?? 10;
-  const highlight = params.sortMessages === "latest" ? "timestamp" : "score";
+  const sorting = params.sortMessages === "latest" || params.sortMessages === "oldest" ? "timestamp" : "score";
   const sortDir = params.sortMessages === "oldest" ? "asc" : "desc";
 
   // Sanitize query
@@ -55,7 +55,7 @@ export async function searchMessagesTool(slack: SlackClient, params: SearchMessa
   const aggregated: any[] = [];
   for (let page = 1; aggregated.length < messageCount; page += 1) {
     sanitizedMessageCount = Math.min(messageCount - aggregated.length, 100); // Slack search API has a limit of 100 messages per page and will reset to a count of 20 if a higher count is requested
-    const res = await slack.sdk.search.messages({ query: finalQuery, count: sanitizedMessageCount, page, sort: highlight, sort_dir: sortDir });
+    const res = await slack.sdk.search.messages({ query: finalQuery, count: sanitizedMessageCount, page, sort: sorting, sort_dir: sortDir });
     if (!res.ok || !res.messages) break;
     const matches = res.messages.matches ?? [];
     foundMessagesForQuery = res.messages.total!;
