@@ -91,11 +91,11 @@ async function main() {
     try {
       if (name === "search_messages") {
         const result = await searchMessagesTool(slack, args);
-        return { content: [{ type: "json", data: result }] } as any;
+        return { content: [{ type: "text", text: JSON.stringify(result) }] } as any;
       }
       if (name === "get_message_thread") {
         const result = await getMessageThreadTool(slack, args);
-        return { content: [{ type: "json", data: result }] } as any;
+        return { content: [{ type: "text", text: JSON.stringify(result) }] } as any;
       }
 
       throw new Error(`Unknown tool: ${name}`);
