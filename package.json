@@ -1,6 +1,6 @@
 {
   "name": "slack-mcp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Integrate the Slack Web API into agentic workflows via MCP",
   "author": "Tom Guttermann",
   "license": "MIT",
