@@ -24,7 +24,7 @@ async function main() {
       tools: [
         {
           name: "search_messages",
-          description: "Search Slack messages across allowed channels. Returns lightweight results.",
+          description: "Search Slack messages optionally including thread replies.",
           inputSchema: {
             type: "object",
             properties: {
@@ -32,24 +32,25 @@ async function main() {
                 type: "string",
                 description: "The query to search for."
               },
-              includeThreads: { 
-                type: "boolean",
-                description: "Whether to include thread replies."
-              },
-              pageLimit: { 
+              messageCount: { 
                 type: "number",
                 description: "The maximum number of results to return.",
                 default: 20
               },
-              channels: { 
-                type: "array", 
-                items: { type: "string" },
-                description: "The channels to search in."
+              includeThreads: { 
+                type: "boolean",
+                description: "Whether to include thread replies. Set to true when doing a deep dive search.",
+                default: false
               },
-              sort: { 
+              threadCount: { 
+                type: "number",
+                description: "The maximum number of thread replies to include if includeThreads is true. Set to a higher number when doing a deep dive search with a small messageCount.",
+                default: 10
+              },
+              sortMessages: { 
                 type: "string",
-                enum: ["mostRelevant", "latest"],
-                description: "The sort order of the results. Either by the most relevant results or the latest results.",
+                enum: ["mostRelevant", "latest", "oldest"],
+                description: "The sort order of the messages. Either by the most relevant results or the latest results or the oldest results.",
                 default: "mostRelevant"
               }
             },
@@ -62,20 +63,22 @@ async function main() {
           inputSchema: {
             type: "object",
             properties: {
-              channel: { 
-                type: "string",
-                description: "The channel to get the message details for."
-              },
               ts: { 
                 type: "string",
                 description: "The timestamp of the message to get the details for."
               },
               includeThread: { 
                 type: "boolean",
-                description: "Whether to include thread replies."
+                description: "Whether to include thread replies.",
+                default: true
+              },
+              threadCount: { 
+                type: "number",
+                description: "The maximum number of thread replies to include if includeThreads is true. Set to a higher number when doing a deep dive search with a small messageCount.",
+                default: 50
               }
             },
-            required: ["channel", "ts"]
+            required: ["ts"]
           }
         }
       ]
