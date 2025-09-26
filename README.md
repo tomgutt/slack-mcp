@@ -5,30 +5,29 @@ Integrate the Slack Web API into agentic workflows via MCP. Inspired by the stru
 ## Tools
 
 1. `search_messages`
-2. `get_message_details`
-3. `list_channels`
+2. `get_message_thread`
 
 ## Setup
 
 ### Access Token
 
-Create a Slack app and obtain a Bot User OAuth Token (starts with `xoxb-`). Invite the bot to the channels you want to search.
+Create a Slack app and obtain a User OAuth Token (starts with `xoxp-`). Ensure the authorized user is a member of the channels you want to search.
 
 Required environment variables (can be set in your shell or a `.env` file):
 
 - `SLACK_AUTH_USER_TOKEN` (starts with `xoxp-`)
-- `SLACK_SEARCH_CHANNELS` (comma-separated channel names without '#')
+- `SLACK_SEARCH_CHANNELS` (comma-separated channel names without '#' with no leading or trailing spaces)
 
 Example `.env`:
 
 ```ini
 SLACK_AUTH_USER_TOKEN=xoxp-...
-SLACK_SEARCH_CHANNELS=general
+SLACK_SEARCH_CHANNELS=general,random
 ```
 
 ### Slack Scopes
 
-Grant the following user auth scopes to your Slack app:
+Grant the following user token scopes to your Slack app (choose public and/or private based on your needs):
 
 - `search:read`
 - `channels:history` (public) and/or `groups:history` (private) (read messages and other content in a user’s public channels)
@@ -83,7 +82,6 @@ npm run inspector
 ```
 
 ## Test a tool without inspector
-ToDo: Add reference to run-test.sh:
 
 ```bash
 ./run-test.sh
@@ -91,11 +89,10 @@ ToDo: Add reference to run-test.sh:
 
 ## Tool Inputs
 
-- `search_messages`: `{ query: string, includeThreads?: boolean, pageLimit?: number, channels?: string[] }`
-- `get_message_details`: `{ channel: string, ts: string, includeThread?: boolean }`
-- `list_channels`: no input
+- `search_messages`: `{ query: string, messageCount?: number, includeThreads?: boolean, threadCount?: number, sortMessages?: "mostRelevant" | "latest" | "oldest" }`
+- `get_message_thread`: `{ channelId: string, ts: string, threadCount?: number }`
 
-All tools restrict results to `SLACK_SEARCH_CHANNELS`.
+All tools restrict results to `SLACK_SEARCH_CHANNELS`. `sortMessages` is only used for `search_messages`.
 
 ## Changes to original
 
