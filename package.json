@@ -22,11 +22,13 @@
     "watch": "tsc --watch",
     "inspector": "npx @modelcontextprotocol/inspector build/index.js",
     "start": "node build/index.js",
+    "start:env": "dotenv -e .env -- node build/index.js",
     "tool": "node build/test-client.js"
   },
   "type": "module",
   "devDependencies": {
     "@types/node": "^24.5.0",
+    "dotenv": "^17.2.2",
     "typescript": "^5.9.2"
   },
   "dependencies": {

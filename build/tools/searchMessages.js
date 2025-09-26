@@ -4,16 +4,18 @@ export async function searchMessagesTool(slack, params) {
         throw new Error("query is required");
     }
     const includeThreads = params.includeThreads ?? false;
-    const pageLimit = Math.max(1, Math.min(10, params.pageLimit ?? 1));
+    const pageLimit = params.pageLimit ?? 20;
+    const highlight = params.sort === "latest" ? "timestamp" : "score";
     // Slack search supports channel: filter; we restrict to allowed channels
     const targetChannels = (params.channels && params.channels.length > 0)
         ? params.channels.filter(c => slack.isChannelAllowed(c))
         : slack.listAllowedChannels();
     const channelFilters = targetChannels.map(c => `in:${c}`).join(" ");
     const finalQuery = [query, channelFilters].filter(Boolean).join(" ");
+    console.log(finalQuery);
     const aggregated = [];
     for (let page = 1; page <= pageLimit; page += 1) {
-        const res = await slack.sdk.search.messages({ query: finalQuery, count: 20, page });
+        const res = await slack.sdk.search.messages({ query: finalQuery, count: 20, page, sort: highlight });
         if (!res.ok || !res.messages)
             break;
         const matches = res.messages.matches ?? [];

@@ -1,9 +1,9 @@
+#!/usr/bin/env node
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { searchMessagesTool } from "./tools/searchMessages.js";
 import { getMessageDetailsTool } from "./tools/getMessageDetails.js";
-import { listChannelsTool } from "./tools/listChannels.js";
 import { slackClient } from "./slack/client.js";
 
 async function main() {
@@ -28,10 +28,30 @@ async function main() {
           inputSchema: {
             type: "object",
             properties: {
-              query: { type: "string" },
-              includeThreads: { type: "boolean" },
-              pageLimit: { type: "number" },
-              channels: { type: "array", items: { type: "string" } }
+              query: { 
+                type: "string",
+                description: "The query to search for."
+              },
+              includeThreads: { 
+                type: "boolean",
+                description: "Whether to include thread replies."
+              },
+              pageLimit: { 
+                type: "number",
+                description: "The maximum number of results to return.",
+                default: 20
+              },
+              channels: { 
+                type: "array", 
+                items: { type: "string" },
+                description: "The channels to search in."
+              },
+              sort: { 
+                type: "string",
+                enum: ["mostRelevant", "latest"],
+                description: "The sort order of the results. Either by the most relevant results or the latest results.",
+                default: "mostRelevant"
+              }
             },
             required: ["query"]
           }
@@ -42,19 +62,20 @@ async function main() {
           inputSchema: {
             type: "object",
             properties: {
-              channel: { type: "string" },
-              ts: { type: "string" },
-              includeThread: { type: "boolean" }
+              channel: { 
+                type: "string",
+                description: "The channel to get the message details for."
+              },
+              ts: { 
+                type: "string",
+                description: "The timestamp of the message to get the details for."
+              },
+              includeThread: { 
+                type: "boolean",
+                description: "Whether to include thread replies."
+              }
             },
             required: ["channel", "ts"]
-          }
-        },
-        {
-          name: "list_channels",
-          description: "List the configured allowed channels.",
-          inputSchema: {
-            type: "object",
-            properties: {}
           }
         }
       ]
@@ -74,10 +95,6 @@ async function main() {
         const result = await getMessageDetailsTool(slack, args);
         return { content: [{ type: "json", data: result }] } as any;
       }
-      if (name === "list_channels") {
-        const result = await listChannelsTool(slack);
-        return { content: [{ type: "json", data: result }] } as any;
-      }
 
       throw new Error(`Unknown tool: ${name}`);
     } catch (err: any) {
@@ -90,6 +107,6 @@ async function main() {
 }
 
 main().catch((error) => {
-    console.error("Fatal error in main():", error);
-    process.exit(1);
+  console.error("Fatal error in main():", error);
+  process.exit(1);
 });

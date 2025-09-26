@@ -16,25 +16,31 @@ Create a Slack app and obtain a Bot User OAuth Token (starts with `xoxb-`). Invi
 
 Required environment variables (can be set in your shell or a `.env` file):
 
-- `SLACK_AUTH_BOT_TOKEN`
-- `SLACK_CHANNELS` (comma-separated channel IDs or names without '#', prefer IDs)
+- `SLACK_AUTH_USER_TOKEN` (starts with `xoxp-`)
+- `SLACK_SEARCH_CHANNELS` (comma-separated channel names without '#')
 
 Example `.env`:
 
 ```ini
-SLACK_AUTH_BOT_TOKEN=xoxb-...
-SLACK_CHANNELS=general,random
+SLACK_AUTH_USER_TOKEN=xoxp-...
+SLACK_SEARCH_CHANNELS=general
 ```
 
 ### Slack Scopes
 
-Grant the following scopes to your Slack app:
+Grant the following user auth scopes to your Slack app:
 
 - `search:read`
-- `channels:history` (public) and/or `groups:history` (private)
-- `channels:read` / `groups:read` (recommended if you later resolve names to IDs)
+- `channels:history` (public) and/or `groups:history` (private) (read messages and other content in a user’s public channels)
+- `channels:read` / `groups:read` (view basic information about public channels in a workspace)
+- `channels:history` (read messages and other content in a user’s public channels)
+- `links:read` (view URLs in messages)
+- `search:read` (search a workspace’s content)
+- `search:read.private` (search a workspace's content in private channels)
+- `search:read.public` (search a workspace's content in public channels)
+- `search:read.users` (search a workspace's users)
+- `users.profile:read` (view a user’s profile information)
 
-The bot must be a member of the channels you want to search.
 
 ## Usage with Claude Desktop
 
@@ -50,8 +56,8 @@ To use this with Claude Desktop, add the following to your `claude_desktop_confi
         "@tomgutt/slack-mcp"
       ],
       "env": {
-        "SLACK_AUTH_BOT_TOKEN": "xoxb-...",
-        "SLACK_CHANNELS": "C0123456,C0654321"
+        "SLACK_AUTH_USER_TOKEN": "xoxp-...",
+        "SLACK_SEARCH_CHANNELS": "general,random"
       }
     }
   }
@@ -64,22 +70,23 @@ If published, you can run it directly via NPX (example shown in the Claude confi
 
 ## Run locally
 
-Dev (stdio):
-
-```bash
-npm run dev
-```
-
 Build:
 
 ```bash
 npm run build
 ```
 
-Start built server (stdio):
+Use the mcp inspector:
 
 ```bash
-npm start
+npm run inspector
+```
+
+## Test a tool without inspector
+ToDo: Add reference to run-test.sh:
+
+```bash
+./run-test.sh
 ```
 
 ## Tool Inputs
@@ -88,13 +95,13 @@ npm start
 - `get_message_details`: `{ channel: string, ts: string, includeThread?: boolean }`
 - `list_channels`: no input
 
-All tools restrict results to `SLACK_CHANNELS`.
+All tools restrict results to `SLACK_SEARCH_CHANNELS`.
 
 ## Changes to original
 
 - Implements Slack message search with optional thread inclusion and paging
 - Adds lightweight response shaping to reduce token usage
-- Provides a channel allow-list via `SLACK_CHANNELS`
+- Provides a channel allow-list via `SLACK_SEARCH_CHANNELS`
 
 ## License
 
