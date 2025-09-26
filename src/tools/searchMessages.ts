@@ -50,6 +50,7 @@ export async function searchMessagesTool(slack: SlackClient, params: SearchMessa
   const targetChannels = slack.listAllowedChannels();
   const finalQuery = addChannelFilters(sanitizedQuery, targetChannels);
   let sanitizedMessageCount = 0;
+  let foundMessagesForQuery = 0;
 
   const aggregated: any[] = [];
   for (let page = 1; aggregated.length < messageCount; page += 1) {
@@ -57,6 +58,7 @@ export async function searchMessagesTool(slack: SlackClient, params: SearchMessa
     const res = await slack.sdk.search.messages({ query: finalQuery, count: sanitizedMessageCount, page, sort: highlight, sort_dir: sortDir });
     if (!res.ok || !res.messages) break;
     const matches = res.messages.matches ?? [];
+    foundMessagesForQuery = res.messages.total!;
 
     for (const m of matches) {
       const anyMatch = m as any;
@@ -92,6 +94,9 @@ export async function searchMessagesTool(slack: SlackClient, params: SearchMessa
 
   return { 
     usedSanitizedQuery: sanitizedQuery,
+    foundMessagesForQuery: foundMessagesForQuery,
+    queriedMessages: messageCount,
+    fetchedMessages: aggregated.length,
     messages: aggregated
    };
 }
