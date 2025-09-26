@@ -31,11 +31,12 @@ if (!process.env.SLACK_SEARCH_CHANNELS) {
 }
 
 // Split channels by comma
-const channels = process.env.SLACK_SEARCH_CHANNELS.split(",");
-
+export let searchChannels = process.env.SLACK_SEARCH_CHANNELS.split(",");
+// Remove leading and trailing spaces as well as #
+searchChannels = searchChannels.map(c => c.trim().replace("#", ""));
 // Check if channel count is greater than 0
-if (!(channels.length > 0)) {
+if (!(searchChannels.length > 0)) {
   throw new Error("SLACK_SEARCH_CHANNELS must contain at least one channel");
 }
 
-export const slackClient = new SlackClient(process.env.SLACK_AUTH_USER_TOKEN, []);
+export const slackClient = new SlackClient(process.env.SLACK_AUTH_USER_TOKEN, searchChannels);
